@@ -1,11 +1,10 @@
 import { useState } from "react";
-
+import { Link } from "react-router-dom";
 const navLinks = [
     { label: "Home", href: "#home" },
     { label: "Services", href: "#services" },
     { label: "About", href: "#about" },
     { label: "Reviews", href: "#testimonials" },
-
     { label: "Contact", href: "#contact" },
 ];
 
@@ -29,6 +28,7 @@ export default function Navbar() {
                 </a>
 
                 {/* Desktop navigation */}
+
                 <div className="hidden items-center gap-8 md:flex">
                     {navLinks.map((link) => (
                         <a
@@ -41,13 +41,16 @@ export default function Navbar() {
                     ))}
                 </div>
 
+
                 {/* Desktop CTA */}
-                <a
-                    href="#booking"
+
+                <Link
+                    to="/booking"
                     className="btn-primary !hidden md:!inline-flex whitespace-nowrap"
                 >
                     Book an Appointment
-                </a>
+                </Link>
+
 
                 {/* Mobile menu button */}
                 <button
