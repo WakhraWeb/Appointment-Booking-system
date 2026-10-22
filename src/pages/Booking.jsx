@@ -30,7 +30,7 @@ const Booking = () => {
     };
 
     return (
-        <section id="booking" className="section-padding bg-ivory">
+        <section id="contact" className="section-padding bg-ivory">
             <div className="container-custom">
 
                 {/* Centered heading */}

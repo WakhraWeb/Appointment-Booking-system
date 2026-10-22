@@ -21,7 +21,8 @@ const services = [
         price: 30,
         duration: 30,
         image:
-            "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1754799670410-b282791342c3?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
+
     },
     {
         id: 3,

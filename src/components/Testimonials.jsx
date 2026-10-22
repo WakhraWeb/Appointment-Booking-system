@@ -22,6 +22,7 @@ const testimonials = [
     },
 ];
 
+
 const Testimonials = () => {
     return (
         <section className="section-padding bg-white" id="testimonials">
