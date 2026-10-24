@@ -1,18 +1,20 @@
-
+import { Link } from "react-router-dom";
 const ServiceCard = ({ service }) => {
     return (
         <article className="group overflow-hidden rounded-2xl border border-border bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
-
             {/* Service Image */}
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-blush">
+            <div className="relative h-64 w-full overflow-hidden bg-blush sm:h-72">
                 <img
                     src={service.image}
                     alt={service.name}
                     loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                    style={{
+                        objectPosition: service.position || "center center",
+                    }}
+                    className="block h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
 
-                <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-forest backdrop-blur">
+                <span className="absolute left-4 top-4 z-10 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-forest backdrop-blur">
                     {service.category}
                 </span>
             </div>
@@ -38,12 +40,12 @@ const ServiceCard = ({ service }) => {
                         {service.duration} min
                     </span>
 
-                    <a
-                        href="#booking"
+                    <Link
+                        to="/booking"
                         className="text-sm font-semibold text-forest transition-colors hover:text-rose-dark"
                     >
                         Book now <span aria-hidden="true">↗</span>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </article>

@@ -70,7 +70,7 @@ const Hero = () => {
 
                     <div className="relative aspect-[4/5] overflow-hidden rounded-t-full rounded-b-[180px] border-[8px] border-white shadow-card sm:border-[12px]">
                         <img
-                            src="/images/salon-hero.jpg"
+                            src="/images/salon-hero.webp"
                             alt="A relaxing beauty salon treatment"
                             className="h-full w-full object-cover"
                             fetchPriority="high"

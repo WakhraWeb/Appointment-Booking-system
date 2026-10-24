@@ -30,7 +30,7 @@ const About = () => {
 
                     <div className="relative aspect-[4/5] overflow-hidden rounded-t-full rounded-b-[180px] border-8 border-white shadow-card">
                         <img
-                            src="/images/salon-about.jpg"
+                            src="/images/salon-about.webp"
                             alt="A peaceful, elegant beauty salon interior"
                             loading="eager"
                             className="!absolute !inset-0 !m-0 !block !h-full !w-full !max-w-none object-cover object-center"

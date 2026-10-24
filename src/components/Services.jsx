@@ -1,5 +1,6 @@
 import ServiceCard from "./ServiceCard";
 import { Link } from "react-router-dom";
+
 const services = [
     {
         id: 1,
@@ -9,8 +10,8 @@ const services = [
             "A refreshing facial treatment to cleanse, hydrate, and restore your natural glow.",
         price: 45,
         duration: 45,
-        image:
-            "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80",
+        image: "/images/facial-treatment.webp",
+        position: "50% 40%",
     },
     {
         id: 2,
@@ -20,9 +21,8 @@ const services = [
             "A relaxing nail care experience with detailed grooming and a polished finish.",
         price: 30,
         duration: 30,
-        image:
-            "https://images.unsplash.com/photo-1754799670410-b282791342c3?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=NHwxMjA3fDA%3D",
-
+        image: "/images/manicure-pedicure.webp",
+        position: "50% 50%",
     },
     {
         id: 3,
@@ -32,8 +32,9 @@ const services = [
             "A beautiful, effortless style tailored to your look and special occasion.",
         price: 40,
         duration: 45,
-        image:
-            "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80",
+        image: "/images/hair-styling.webp",
+
+        position: "50% 50%",
     },
 ];
 
