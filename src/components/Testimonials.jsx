@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 const testimonials = [
     {
         id: 1,
@@ -81,9 +82,9 @@ const Testimonials = () => {
                 </div>
 
                 <div className="mt-10 text-center">
-                    <a href="#booking" className="btn-primary">
+                    <Link to="/booking" className="btn-primary">
                         Book Your Experience
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>

@@ -1,5 +1,5 @@
 import ServiceCard from "./ServiceCard";
-
+import { Link } from "react-router-dom";
 const services = [
     {
         id: 1,
@@ -63,9 +63,9 @@ const Services = () => {
                 </div>
 
                 <div className="mt-10 text-center">
-                    <a href="#booking" className="btn-primary">
+                    <Link to="/booking" className="btn-primary">
                         Book Your Treatment
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>

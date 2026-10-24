@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const Hero = () => {
     return (
         <section
@@ -27,10 +29,10 @@ const Hero = () => {
                     </p>
 
                     <div className="mt-8 flex flex-wrap items-center gap-4">
-                        <a href="#booking" className="btn-primary">
+                        <Link to="/booking" className="btn-primary">
                             Book Your Appointment
                             <span aria-hidden="true">↗</span>
-                        </a>
+                        </Link>
 
                         <a
                             href="#services"
