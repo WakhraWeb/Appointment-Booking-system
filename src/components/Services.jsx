@@ -10,7 +10,7 @@ const services = [
             "A refreshing facial treatment to cleanse, hydrate, and restore your natural glow.",
         price: 45,
         duration: 45,
-        image: "/images/salon-hero.webp",
+        image: "/images/facial-treatment.webp",
         position: "50% 40%",
     },
     {
