@@ -7,8 +7,8 @@ export default function AdminDashboard() {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [updatingId, setUpdatingId] = useState(null);
 
-    // Fetch appointments
     const fetchAppointments = async () => {
         setError("");
         setLoading(true);
@@ -30,7 +30,6 @@ export default function AdminDashboard() {
         }
     };
 
-    // Initial data loading
     useEffect(() => {
         let active = true;
 
@@ -43,9 +42,7 @@ export default function AdminDashboard() {
 
                 if (error) throw error;
 
-                if (active) {
-                    setAppointments(data || []);
-                }
+                if (active) setAppointments(data || []);
             } catch (err) {
                 console.error("Fetch appointments error:", err);
 
@@ -53,9 +50,7 @@ export default function AdminDashboard() {
                     setError("Appointments load nahi ho sakin. Please try again.");
                 }
             } finally {
-                if (active) {
-                    setLoading(false);
-                }
+                if (active) setLoading(false);
             }
         };
 
@@ -66,7 +61,30 @@ export default function AdminDashboard() {
         };
     }, []);
 
-    // Dashboard statistics
+    // Update appointment status
+    const updateStatus = async (appointmentId, newStatus) => {
+        setError("");
+        setUpdatingId(appointmentId);
+
+        try {
+            const { error } = await supabase
+                .from("appointments")
+                .update({ status: newStatus })
+                .eq("id", appointmentId);
+
+            if (error) throw error;
+
+            await fetchAppointments();
+        } catch (err) {
+            console.error("Status update error:", err);
+            setError(
+                "Appointment status update nahi ho saka. Please try again."
+            );
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
     const stats = [
         {
             title: "Total Appointments",
@@ -76,25 +94,19 @@ export default function AdminDashboard() {
         },
         {
             title: "Pending",
-            value: appointments.filter(
-                (a) => a.status === "pending"
-            ).length,
+            value: appointments.filter((a) => a.status === "pending").length,
             description: "Awaiting confirmation",
             icon: "⏳",
         },
         {
             title: "Confirmed",
-            value: appointments.filter(
-                (a) => a.status === "confirmed"
-            ).length,
+            value: appointments.filter((a) => a.status === "confirmed").length,
             description: "Approved bookings",
             icon: "✓",
         },
         {
             title: "Cancelled",
-            value: appointments.filter(
-                (a) => a.status === "cancelled"
-            ).length,
+            value: appointments.filter((a) => a.status === "cancelled").length,
             description: "Cancelled bookings",
             icon: "✕",
         },
@@ -180,16 +192,14 @@ export default function AdminDashboard() {
                         </button>
                     </div>
 
-                    {/* Error */}
                     {error && (
                         <div className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-600">
                             {error}
                         </div>
                     )}
 
-                    {/* Appointments Table */}
                     <div className="mt-8 overflow-x-auto">
-                        <table className="w-full min-w-[750px] text-left">
+                        <table className="w-full min-w-[950px] text-left">
                             <thead>
                                 <tr className="border-b border-border text-sm text-muted">
                                     <th className="px-4 py-4 font-medium">Customer</th>
@@ -197,19 +207,20 @@ export default function AdminDashboard() {
                                     <th className="px-4 py-4 font-medium">Date</th>
                                     <th className="px-4 py-4 font-medium">Time</th>
                                     <th className="px-4 py-4 font-medium">Status</th>
+                                    <th className="px-4 py-4 font-medium">Actions</th>
                                 </tr>
                             </thead>
 
                             <tbody>
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="5" className="px-4 py-12 text-center text-sm text-muted">
+                                        <td colSpan="6" className="px-4 py-12 text-center text-sm text-muted">
                                             Loading appointments...
                                         </td>
                                     </tr>
                                 ) : appointments.length === 0 ? (
                                     <tr>
-                                        <td colSpan="5" className="px-4 py-12 text-center text-sm text-muted">
+                                        <td colSpan="6" className="px-4 py-12 text-center text-sm text-muted">
                                             No appointments found.
                                             <p className="mt-2">
                                                 New bookings will appear here.
@@ -244,9 +255,50 @@ export default function AdminDashboard() {
                                             </td>
 
                                             <td className="px-4 py-4">
-                                                <span className="rounded-full bg-blush px-3 py-1 text-xs font-medium text-rose-dark">
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${appointment.status === "confirmed"
+                                                            ? "bg-green-100 text-green-800"
+                                                            : appointment.status === "cancelled"
+                                                                ? "bg-red-100 text-red-800"
+                                                                : "bg-amber-100 text-amber-800"
+                                                        }`}
+                                                >
                                                     {appointment.status}
                                                 </span>
+                                            </td>
+
+                                            <td className="px-4 py-4">
+                                                {appointment.status === "pending" ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                updateStatus(appointment.id, "confirmed")
+                                                            }
+                                                            disabled={updatingId === appointment.id}
+                                                            className="rounded-lg bg-green-100 px-3 py-2 text-xs font-semibold text-green-800 hover:bg-green-200 disabled:opacity-50"
+                                                        >
+                                                            {updatingId === appointment.id
+                                                                ? "Updating..."
+                                                                : "Confirm"}
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                updateStatus(appointment.id, "cancelled")
+                                                            }
+                                                            disabled={updatingId === appointment.id}
+                                                            className="rounded-lg bg-red-100 px-3 py-2 text-xs font-semibold text-red-800 hover:bg-red-200 disabled:opacity-50"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-muted">
+                                                        No action needed
+                                                    </span>
+                                                )}
                                             </td>
                                         </tr>
                                     ))
@@ -255,7 +307,6 @@ export default function AdminDashboard() {
                         </table>
                     </div>
                 </section>
-
             </div>
         </main>
     );
