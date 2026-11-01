@@ -1,321 +1,190 @@
 
-// import { useState } from "react";
-// import { Link } from "react-router-dom";
-
-// export default function Login() {
-//     const [showPassword, setShowPassword] = useState(false);
-
-//     const handleSubmit = (event) => {
-//         event.preventDefault();
-//         alert("Login authentication will be connected with Supabase soon.");
-//     };
-
-//     return (
-//         <main className="flex min-h-screen items-center justify-center bg-ivory px-4 py-12">
-//             <div className="w-full max-w-md">
-
-//                 {/* Brand */}
-//                 <Link to="/" className="mb-8 block text-center">
-//                     <span className="font-heading text-3xl font-bold text-forest">
-//                         Glow<span className="text-rose-dark">Beauty</span>
-//                     </span>
-//                     <span className="mt-1 block text-xs uppercase tracking-[0.2em] text-muted">
-//                         Your beauty, our passion
-//                     </span>
-//                 </Link>
-
-//                 {/* Login card */}
-//                 <div className="rounded-3xl border border-border bg-white p-6 shadow-card sm:p-9">
-//                     <div className="mb-8 text-center">
-//                         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-dark">
-//                             Welcome Back
-//                         </p>
-//                         <h1 className="font-heading text-3xl font-semibold text-forest">
-//                             Sign in to your account
-//                         </h1>
-//                         <p className="mt-3 text-sm leading-6 text-muted">
-//                             Manage your appointments and enjoy a little time for yourself.
-//                         </p>
-//                     </div>
-
-//                     <form onSubmit={handleSubmit} className="space-y-5">
-//                         <div>
-//                             <label
-//                                 htmlFor="email"
-//                                 className="mb-2 block text-sm font-semibold text-ink"
-//                             >
-//                                 Email address
-//                             </label>
-//                             <input
-//                                 id="email"
-//                                 name="email"
-//                                 type="email"
-//                                 placeholder="you@example.com"
-//                                 autoComplete="email"
-//                                 required
-//                                 className="w-full rounded-xl border border-border bg-ivory px-4 py-3 text-sm outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/10"
-//                             />
-//                         </div>
-
-//                         <div>
-//                             <div className="mb-2 flex items-center justify-between gap-3">
-//                                 <label
-//                                     htmlFor="password"
-//                                     className="text-sm font-semibold text-ink"
-//                                 >
-//                                     Password
-//                                 </label>
-//                                 <button
-//                                     type="button"
-//                                     className="text-xs font-semibold text-forest hover:text-rose-dark"
-//                                     onClick={() => alert("Password reset will be added with Supabase.")}
-//                                 >
-//                                     Forgot password?
-//                                 </button>
-//                             </div>
-
-//                             <div className="relative">
-//                                 <input
-//                                     id="password"
-//                                     name="password"
-//                                     type={showPassword ? "text" : "password"}
-//                                     placeholder="Enter your password"
-//                                     autoComplete="current-password"
-//                                     required
-//                                     className="w-full rounded-xl border border-border bg-ivory px-4 py-3 pr-20 text-sm outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/10"
-//                                 />
-//                                 <button
-//                                     type="button"
-//                                     onClick={() => setShowPassword(!showPassword)}
-//                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted hover:text-forest"
-//                                 >
-//                                     {showPassword ? "Hide" : "Show"}
-//                                 </button>
-//                             </div>
-//                         </div>
-
-//                         <button
-//                             type="submit"
-//                             className="btn-primary w-full"
-//                         >
-//                             Sign In
-//                         </button>
-//                     </form>
-
-//                     <p className="mt-7 text-center text-sm text-muted">
-//                         Don't have an account?{" "}
-//                         <Link
-//                             to="/signup"
-//                             className="font-semibold text-forest hover:text-rose-dark"
-//                         >
-//                             Create account
-//                         </Link>
-//                     </p>
-//                 </div>
-
-//                 <p className="mt-6 text-center text-xs text-muted">
-//                     <Link to="/" className="transition hover:text-forest">
-//                         ← Back to home
-//                     </Link>
-//                 </p>
-//             </div>
-//         </main>
-//     );
-// }
-
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
 export default function Login() {
+    const navigate = useNavigate();
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [message, setMessage] = useState("");
+    const [success, setSuccess] = useState("");
 
-    const navigate = useNavigate();
+    const handleLogin = async (e) => {
+        e.preventDefault();
 
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
-        setLoading(true);
         setError("");
-        setMessage("");
+        setSuccess("");
+        setLoading(true);
 
-        const formData = new FormData(event.currentTarget);
-        const email = formData.get("email").trim();
-        const password = formData.get("password");
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+        });
 
-        try {
-            // Step 1: Login with Supabase
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
+        setLoading(false);
 
-            if (error) throw error;
-
-            // Step 2: Get the logged-in user's role
-            const { data: profile, error: profileError } = await supabase
-                .from("profiles")
-                .select("role")
-                .eq("id", data.user.id)
-                .single();
-
-            if (profileError || !profile) {
-                await supabase.auth.signOut();
-                throw new Error("User profile not found. Please contact support.");
-            }
-
-            // Step 3: Redirect according to role
-            if (profile.role === "admin") {
-                navigate("/admin-dashboard", { replace: true });
-            } else if (profile.role === "customer") {
-                navigate("/dashboard", { replace: true });
-            } else {
-                await supabase.auth.signOut();
-                throw new Error("Your account role is not recognized.");
-            }
-
-        } catch (err) {
-            console.error("Login error:", err);
-
-            setError(
-                err.message === "User profile not found. Please contact support."
-                    ? err.message
-                    : err.message === "Your account role is not recognized."
-                        ? err.message
-                        : "We couldn't sign you in. Please check your email and password, and try again."
-            );
-        } finally {
-            setLoading(false);
+        if (error) {
+            setError(error.message);
+            return;
         }
 
+        // Existing role-based redirect
+        const role = data.user?.user_metadata?.role;
 
+        if (role === "admin") {
+            navigate("/admin-dashboard");
+        } else {
+            navigate("/dashboard");
+        }
+    };
+
+    const handleForgotPassword = async () => {
+        setError("");
+        setSuccess("");
+
+        if (!email.trim()) {
+            setError("Please enter your email address first.");
+            return;
+        }
+
+        setLoading(true);
+
+        const { error } = await supabase.auth.resetPasswordForEmail(
+            email.trim(),
+            {
+                redirectTo: `${window.location.origin}/reset-password`,
+            }
+        );
+
+        setLoading(false);
+
+        if (error) {
+            setError(error.message);
+            return;
+        }
+
+        setSuccess(
+            "Password reset link has been sent. Please check your email inbox."
+        );
     };
 
     return (
-        <main className="flex min-h-screen items-center justify-center bg-ivory px-4 py-12">
-            <div className="w-full max-w-md">
+        <div className="min-h-screen flex items-center justify-center bg-ivory px-4 py-10">
+            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-card">
 
-                <Link to="/" className="mb-8 block text-center">
-                    <span className="font-heading text-3xl font-bold text-forest">
-                        Glow<span className="text-rose-dark">Beauty</span>
-                    </span>
-                    <span className="mt-1 block text-xs uppercase tracking-[0.2em] text-muted">
-                        Your beauty, our passion
-                    </span>
-                </Link>
+                <div className="mb-8 text-center">
+                    <h1 className="font-heading text-3xl font-bold text-forest">
+                        Welcome Back
+                    </h1>
 
-                <div className="rounded-3xl border border-border bg-white p-6 shadow-card sm:p-9">
-                    <div className="mb-8 text-center">
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-dark">
-                            Welcome Back
-                        </p>
-                        <h1 className="font-heading text-3xl font-semibold text-forest">
-                            Sign in to your account
-                        </h1>
-                        <p className="mt-3 text-sm leading-6 text-muted">
-                            Manage your appointments and enjoy a little time for yourself.
-                        </p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div>
-                            <label
-                                htmlFor="email"
-                                className="mb-2 block text-sm font-semibold text-ink"
-                            >
-                                Email address
-                            </label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="you@example.com"
-                                autoComplete="email"
-                                required
-                                className="w-full rounded-xl border border-border bg-ivory px-4 py-3 text-sm outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/10"
-                            />
-                        </div>
-
-                        <div>
-                            <div className="mb-2 flex items-center justify-between gap-3">
-                                <label
-                                    htmlFor="password"
-                                    className="text-sm font-semibold text-ink"
-                                >
-                                    Password
-                                </label>
-                                <button
-                                    type="button"
-                                    className="text-xs font-semibold text-forest hover:text-rose-dark"
-                                    onClick={() => setError("Password reset will be configured next.")}
-                                >
-                                    Forgot password?
-                                </button>
-                            </div>
-
-                            <div className="relative">
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="Enter your password"
-                                    autoComplete="current-password"
-                                    required
-                                    className="w-full rounded-xl border border-border bg-ivory px-4 py-3 pr-20 text-sm outline-none transition focus:border-forest focus:ring-2 focus:ring-forest/10"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted hover:text-forest"
-                                >
-                                    {showPassword ? "Hide" : "Show"}
-                                </button>
-                            </div>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {loading ? "Signing In..." : "Sign In"}
-                        </button>
-
-                        {error && (
-                            <p role="alert" className="text-center text-sm text-red-600">
-                                {error}
-                            </p>
-                        )}
-
-                        {message && (
-                            <p role="status" className="text-center text-sm text-forest">
-                                {message}
-                            </p>
-                        )}
-                    </form>
-
-                    <p className="mt-7 text-center text-sm text-muted">
-                        Don't have an account?{" "}
-                        <Link
-                            to="/signup"
-                            className="font-semibold text-forest hover:text-rose-dark"
-                        >
-                            Create account
-                        </Link>
+                    <p className="mt-2 text-sm text-muted">
+                        Login to your GlowBeauty account
                     </p>
                 </div>
 
-                <p className="mt-6 text-center text-xs text-muted">
-                    <Link to="/" className="transition hover:text-forest">
-                        ← Back to home
+                <form onSubmit={handleLogin} className="space-y-5">
+
+                    {/* Email */}
+                    <div>
+                        <label
+                            htmlFor="email"
+                            className="mb-2 block text-sm font-medium text-ink"
+                        >
+                            Email Address
+                        </label>
+
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Enter your email"
+                            required
+                            className="w-full rounded-lg border border-border px-4 py-3 outline-none focus:border-forest"
+                        />
+                    </div>
+
+                    {/* Password */}
+                    <div>
+                        <label
+                            htmlFor="password"
+                            className="mb-2 block text-sm font-medium text-ink"
+                        >
+                            Password
+                        </label>
+
+                        <div className="relative">
+                            <input
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Enter your password"
+                                required
+                                className="w-full rounded-lg border border-border px-4 py-3 pr-16 outline-none focus:border-forest"
+                            />
+
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted"
+                            >
+                                {showPassword ? "Hide" : "Show"}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Forgot Password */}
+                    <div className="flex justify-end">
+                        <button
+                            type="button"
+                            onClick={handleForgotPassword}
+                            disabled={loading}
+                            className="text-sm font-medium text-rose-dark hover:underline disabled:opacity-50"
+                        >
+                            Forgot Password?
+                        </button>
+                    </div>
+
+                    {/* Error Message */}
+                    {error && (
+                        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+                            {error}
+                        </p>
+                    )}
+
+                    {/* Success Message */}
+                    {success && (
+                        <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+                            {success}
+                        </p>
+                    )}
+
+                    {/* Login Button */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {loading ? "Please wait..." : "Login"}
+                    </button>
+                </form>
+
+                <p className="mt-6 text-center text-sm text-muted">
+                    Don't have an account?{" "}
+                    <Link
+                        to="/signup"
+                        className="font-semibold text-forest hover:underline"
+                    >
+                        Sign Up
                     </Link>
                 </p>
+
             </div>
-        </main>
+        </div>
     );
 }
