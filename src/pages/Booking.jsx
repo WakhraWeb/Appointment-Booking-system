@@ -29,56 +29,63 @@ const Booking = () => {
     //     alert("Form ready! Supabase booking integration will be added next.");
     // };
 
-const [submitting, setSubmitting] = useState(false);
-const [message, setMessage] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+    const [message, setMessage] = useState("");
 
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setMessage("");
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        setMessage("");
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+        try {
+            const { data, error } = await supabase.functions.invoke(
+                "create-booking",
+                {
+                    body: {
+                        name: form.name,
+                        email: form.email,
+                        phone: form.phone,
+                        service: form.service,
+                        date: form.date,
+                        time: form.time,
+                    },
+                    headers: session?.access_token
+                        ? {
+                            Authorization: `Bearer ${session.access_token}`,
+                        }
+                        : {},
+                }
+            );
 
-    try {
-        const { data, error } = await supabase.functions.invoke(
-            "create-booking",
-            {
-                body: {
-                    name: form.name,
-                    email: form.email,
-                    phone: form.phone,
-                    service: form.service,
-                    date: form.date,
-                    time: form.time,
-                },
+            if (error) {
+                throw error;
             }
-        );
 
-        if (error) {
-            throw error;
+            if (data?.error) {
+                throw new Error(data.error);
+            }
+
+            setMessage("Appointment request submitted successfully!");
+
+            setForm({
+                name: "",
+                email: "",
+                phone: "",
+                service: "",
+                date: "",
+                time: "",
+            });
+        } catch (error) {
+            console.error("Booking error:", error);
+            setMessage(
+                error.message || "Booking failed. Please try again."
+            );
+        } finally {
+            setSubmitting(false);
         }
-
-        if (data?.error) {
-            throw new Error(data.error);
-        }
-
-        setMessage("Appointment request submitted successfully!");
-
-        setForm({
-            name: "",
-            email: "",
-            phone: "",
-            service: "",
-            date: "",
-            time: "",
-        });
-    } catch (error) {
-        console.error("Booking error:", error);
-        setMessage(
-            error.message || "Booking failed. Please try again."
-        );
-    } finally {
-        setSubmitting(false);
-    }
-};
+    };
 
     return (
         <section id="contact" className="section-padding bg-ivory">
@@ -238,28 +245,21 @@ const handleSubmit = async (e) => {
                         </div>
                     </div>
 
-                    {/* <button type="submit" className="btn-primary w-full">
-                        Request Appointment
-                    </button> */}
 
-                    {/* <p className="text-center text-xs leading-5 text-muted">
-                        Demo form only. Your appointment will not be saved until we
-                        connect Supabase.
-                    </p> */}
-                    
-<button
-    type="submit"
-    disabled={submitting}
-    className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
->
-    {submitting ? "Submitting..." : "Request Appointment"}
-</button>
 
-{message && (
-    <p role="status" className="mt-3 text-center text-sm text-forest">
-        {message}
-    </p>
-)}
+                    <button
+                        type="submit"
+                        disabled={submitting}
+                        className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {submitting ? "Submitting..." : "Request Appointment"}
+                    </button>
+
+                    {message && (
+                        <p role="status" className="mt-3 text-center text-sm text-forest">
+                            {message}
+                        </p>
+                    )}
 
                 </form>
             </div>

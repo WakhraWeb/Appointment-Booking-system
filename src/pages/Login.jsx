@@ -136,6 +136,7 @@ export default function Login() {
 
     const navigate = useNavigate();
 
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -148,24 +149,51 @@ export default function Login() {
         const password = formData.get("password");
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            // Step 1: Login with Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
 
             if (error) throw error;
 
-            setMessage("Login successful!");
+            // Step 2: Get the logged-in user's role
+            const { data: profile, error: profileError } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("id", data.user.id)
+                .single();
 
-            navigate("/dashboard", { replace: true });
+            if (profileError || !profile) {
+                await supabase.auth.signOut();
+                throw new Error("User profile not found. Please contact support.");
+            }
+
+            // Step 3: Redirect according to role
+            if (profile.role === "admin") {
+                navigate("/admin-dashboard", { replace: true });
+            } else if (profile.role === "customer") {
+                navigate("/dashboard", { replace: true });
+            } else {
+                await supabase.auth.signOut();
+                throw new Error("Your account role is not recognized.");
+            }
+
         } catch (err) {
             console.error("Login error:", err);
+
             setError(
-                "We couldn't sign you in. Please check your email and password, and try again."
+                err.message === "User profile not found. Please contact support."
+                    ? err.message
+                    : err.message === "Your account role is not recognized."
+                        ? err.message
+                        : "We couldn't sign you in. Please check your email and password, and try again."
             );
         } finally {
             setLoading(false);
         }
+
+
     };
 
     return (
