@@ -1,10 +1,20 @@
 
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+
 const services = [
     { name: "Signature Facial", price: 45, duration: 45 },
     { name: "Luxury Manicure", price: 30, duration: 30 },
     { name: "Hair Styling", price: 40, duration: 45 },
+];
+
+const timeSlots = [
+    "10:00 AM",
+    "11:00 AM",
+    "12:00 PM",
+    "2:00 PM",
+    "3:00 PM",
+    "4:00 PM",
 ];
 
 const Booking = () => {
@@ -17,29 +27,33 @@ const Booking = () => {
         time: "",
     });
 
-    const updateForm = (e) =>
-        setForm({ ...form, [e.target.name]: e.target.value });
+    const [submitting, setSubmitting] = useState(false);
+    const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState("");
+
+    const updateForm = (e) => {
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value,
+        });
+    };
 
     const selectedService = services.find(
         (service) => service.name === form.service
     );
 
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-    //     alert("Form ready! Supabase booking integration will be added next.");
-    // };
-
-    const [submitting, setSubmitting] = useState(false);
-    const [message, setMessage] = useState("");
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         setSubmitting(true);
         setMessage("");
-        const {
-            data: { session },
-        } = await supabase.auth.getSession();
+        setMessageType("");
+
         try {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
             const { data, error } = await supabase.functions.invoke(
                 "create-booking",
                 {
@@ -60,7 +74,25 @@ const Booking = () => {
             );
 
             if (error) {
-                throw error;
+                let errorMessage =
+                    "Could not save appointment. Please try again.";
+
+                if (
+                    error.context &&
+                    typeof error.context.json === "function"
+                ) {
+                    try {
+                        const responseBody = await error.context.json();
+
+                        if (responseBody?.error) {
+                            errorMessage = responseBody.error;
+                        }
+                    } catch {
+                        console.error("Could not read error response.");
+                    }
+                }
+
+                throw new Error(errorMessage);
             }
 
             if (data?.error) {
@@ -68,6 +100,7 @@ const Booking = () => {
             }
 
             setMessage("Appointment request submitted successfully!");
+            setMessageType("success");
 
             setForm({
                 name: "",
@@ -79,9 +112,11 @@ const Booking = () => {
             });
         } catch (error) {
             console.error("Booking error:", error);
+
             setMessage(
                 error.message || "Booking failed. Please try again."
             );
+            setMessageType("error");
         } finally {
             setSubmitting(false);
         }
@@ -90,7 +125,6 @@ const Booking = () => {
     return (
         <section id="contact" className="section-padding bg-ivory">
             <div className="container-custom">
-
                 {/* Centered heading */}
                 <div className="mx-auto max-w-2xl text-center">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-dark">
@@ -102,8 +136,8 @@ const Booking = () => {
                     </h2>
 
                     <p className="mt-4 leading-7 text-muted">
-                        Choose your treatment and preferred time. We look forward to
-                        welcoming you to GlowBeauty.
+                        Choose your treatment and preferred time. We look
+                        forward to welcoming you to GlowBeauty.
                     </p>
 
                     {selectedService && (
@@ -113,7 +147,8 @@ const Booking = () => {
                             </p>
 
                             <p className="mt-2 text-sm text-muted">
-                                {selectedService.duration} minutes · ${selectedService.price}
+                                {selectedService.duration} minutes · $
+                                {selectedService.price}
                             </p>
                         </div>
                     )}
@@ -191,7 +226,10 @@ const Booking = () => {
                             <option value="">Select a treatment</option>
 
                             {services.map((service) => (
-                                <option key={service.name} value={service.name}>
+                                <option
+                                    key={service.name}
+                                    value={service.name}
+                                >
                                     {service.name} — ${service.price}
                                 </option>
                             ))}
@@ -229,14 +267,7 @@ const Booking = () => {
                             >
                                 <option value="">Select time</option>
 
-                                {[
-                                    "10:00 AM",
-                                    "11:00 AM",
-                                    "12:00 PM",
-                                    "2:00 PM",
-                                    "3:00 PM",
-                                    "4:00 PM",
-                                ].map((time) => (
+                                {timeSlots.map((time) => (
                                     <option key={time} value={time}>
                                         {time}
                                     </option>
@@ -245,22 +276,28 @@ const Booking = () => {
                         </div>
                     </div>
 
-
-
                     <button
                         type="submit"
                         disabled={submitting}
                         className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        {submitting ? "Submitting..." : "Request Appointment"}
+                        {submitting
+                            ? "Submitting..."
+                            : "Request Appointment"}
                     </button>
 
                     {message && (
-                        <p role="status" className="mt-3 text-center text-sm text-forest">
+                        <p
+                            role="status"
+                            aria-live="polite"
+                            className={`mt-3 text-center text-sm font-medium ${messageType === "error"
+                                    ? "text-red-600"
+                                    : "text-forest"
+                                }`}
+                        >
                             {message}
                         </p>
                     )}
-
                 </form>
             </div>
         </section>
